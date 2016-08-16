@@ -1,5 +1,5 @@
 $(function () {
-    var basicUrl = "http://localhost:8080/Uno83Server/api/UnoGame/";
+    var basicUrl = "http://localhost:8080/UnoGamePhase2/api/game/";
     $("#gameListRefresh").on("singletap", function () {
         $.getJSON(basicUrl + "GET/gameList")
                 .done(function (result) {
@@ -14,14 +14,14 @@ $(function () {
                     $("#gameAmount").text(count);
                 })
                 .fail(function () {
-                    alert("Can't Get the Game List!");
+                    alert("Check Your JQuery");
                 });
     })
     $("#gameListRefresh").trigger("singletap");
 
     $("#gameList").on("doubletap", "li", function () {
         var id = $(this).find("#selected-id").text();
-        if ($(this).find("#selected-status").text() == "GAME_STARTED") {
+        if ($(this).find("#selected-status").text() === "GAME_STARTED") {
             alert("The Game Already Started!");
         }
         $("#detailsGameId").text(id);
@@ -36,9 +36,11 @@ $(function () {
     $("#joinBtn").on("singletap", function () {
         var gameId = $("#detailsGameId").text();
         var playerName = $("#playerName").val();
-        $("#playerName").empty()
+        $("#playerName").empty();
         $.post(basicUrl + "POST/joinGame/" + gameId + "/" + playerName)
                 .done(function () {
+                    console.info("player added");
+            
                     $("#waitingGameId").text(gameId);
                     $("#player").text(playerName);
                     $.UIGoToArticle("#waitingGame");
@@ -55,7 +57,7 @@ $(function () {
                     for (var i = 0; i < result.length; i++)
                     {
                         var cardUrl = $('<li class="special">');
-                        var img = $("<img>").attr("src", "http://localhost:8080/Uno83Server/img/" + result[i].card);
+                        var img = $("<img>").attr("src", "http://localhost:8080/UnoGamePhase2/img/" + result[i].card);
                         cardUrl.append(img);
                         $("#handCards").append(cardUrl);
                     }

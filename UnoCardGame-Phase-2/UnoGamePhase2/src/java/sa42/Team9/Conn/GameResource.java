@@ -27,48 +27,38 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-
-
-
 /**
  *
  * @author E0015359
  */
-
 @RequestScoped
 @Path("/game")
 public class GameResource {
-    
+
     @Inject
     private GameTable gameTable;
-    
-    
-    
+
 //    public static String playerId="";
 //    public static UnoPlayer  player= null;
-    
-    
     @POST
-    @Path("/creategame")
+    @Path("creategame")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addGame(@FormParam("gname") String name, @FormParam("maxply") int maxp){
-        
-        String gameTitle = name;
-        String generatedID = UUID.randomUUID().toString().substring(0,8);
-        String gameUID = generatedID;
- 
-        Game game = new Game(gameUID, gameTitle, Status.GAME_WAITING, maxp );
-        gameTable.getGametable().put(gameUID, game);
-        
-     
-        
-               System.out.print(">> Create the game：ID:" + gameUID + " TITLE:" + name);
+    public Response addGame(@FormParam("gname") String name, @FormParam("maxply") int maxp) {
 
-        return Response.ok(game.toJson()).header("Access-Control-Allow-Origin","*").build();         
+        String gameTitle = name;
+        String generatedID = UUID.randomUUID().toString().substring(0, 8);
+        String gameUID = generatedID;
+
+        Game game = new Game(gameUID, gameTitle, Status.GAME_WAITING, maxp);
+        gameTable.getGametable().put(gameUID, game);
+
+        System.out.print(">> Create the game：ID:" + gameUID + " TITLE:" + name);
+
+        return Response.ok(game.toJson()).build();
     }
-    
+
     @GET
-    @Path("GET/gameTable.getGametable()")
+    @Path("GET/gameList")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGameList() {
         System.out.print(">> Get the Game List");
@@ -76,9 +66,8 @@ public class GameResource {
         for (Map.Entry<String, Game> game : gameTable.getGametable().entrySet()) {
             gameJsonArray.add(game.getValue().toJson());
         }
-        return Response.ok(gameJsonArray.build())
-                .header("Access-Control-Allow-Origin","*")
-                .build();
+        return Response.ok(gameJsonArray.build()).build();
+                               
     }
 
     @POST
@@ -87,17 +76,21 @@ public class GameResource {
     public Response joinGame(@PathParam("gameId") String gameId, @PathParam("playerName") String playerName) {
         UUID id = UUID.randomUUID();
         String playerId = id.toString().substring(0, 6);
+        
         unoPlayer player = new unoPlayer(playerName, playerId);
-
+        
+        
         Game g = gameTable.getGametable().get(gameId);
-        if (g.getmaxPlayers()== g.getGamePlayers().size()) {
+
+        System.out.println(">> Player Max " + g.getmaxPlayers()+ "Current player " + g.getGamePlayers().size()  );
+        if (g.getmaxPlayers() == g.getGamePlayers().size()) {
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
-        g.addPlayer(player);
-
-        return Response.ok()
-                .header("Access-Control-Allow-Origin","*")
-                .build();
+       g.addPlayer(player);
+        
+        return Response.ok().build();
+                
+               
     }
 
     @GET
@@ -110,15 +103,15 @@ public class GameResource {
         JsonObject json = Json.createObjectBuilder()
                 .add("amount", amount)
                 .build();
-        return Response.ok(json)
-                .header("Access-Control-Allow-Origin","*")
-                .build();
+        return Response.ok(json).build();
+                
+                
     }
 
     @POST
-    @Path("POST/Start/{gameId}")
+    @Path("start")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response startGame(@PathParam("gameId") String gameId) {
+    public Response startGame(@FormParam("gid") String gameId) {
         Game g = gameTable.getGametable().get(gameId);
         GameEngine.initDeck(g.getGameDeck());
         GameEngine.initGame(g);
@@ -137,9 +130,9 @@ public class GameResource {
                     .build();
             gameInfoJsonArray.add(gameJson1);
         }
-        return Response.ok(gameInfoJsonArray.build())
-                .header("Access-Control-Allow-Origin","*")
-                .build();
+        return Response.ok(gameInfoJsonArray.build()).build();
+               
+               
     }
 
     @GET
@@ -147,10 +140,11 @@ public class GameResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGameInfo(@PathParam("gameId") String gameId, @PathParam("playerName") String name) {
         Game game = gameTable.getGametable().get(gameId);
+        System.out.println(game.getGameStatus());
+        
         if (!game.getGameStatus().equals(Status.GAME_START)) {
-            return Response.status(Response.Status.NOT_ACCEPTABLE)
-                    .header("Access-Control-Allow-Origin","*")
-                    .build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).build();                 
+                    
         } else {
 
             JsonArrayBuilder handCards = Json.createArrayBuilder();
@@ -166,9 +160,9 @@ public class GameResource {
                         .build();
                 handCards.add(cards);
             }
-            return Response.ok(handCards.build())
-                    .header("Access-Control-Allow-Origin","*")
-                    .build();
+            return Response.ok(handCards.build()).build();
+                    
+                    
         }
     }
 }
